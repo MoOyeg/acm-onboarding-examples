@@ -1,0 +1,19 @@
+resources:
+- ./limitranges/limitrange-global.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+#Instead of using a secret generator we are going to use a configuration policy
+# secretGenerator:
+# - name: global-secret-for-every-namespace
+#   literals:
+#   - username=admin
+#   - password=password
+#   type: Opaque
+#   options:
+#     annotations:
+#       base_config: "true"
+#     labels:
+#       app.kubernetes.io/name: "base_config"
+# generatorOptions:
+#  disableNameSuffixHash: true

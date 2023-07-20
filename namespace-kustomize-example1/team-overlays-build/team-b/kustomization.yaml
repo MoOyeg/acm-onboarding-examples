@@ -1,0 +1,16 @@
+resources:
+  - ./team-b-clusterresources
+  - ./team-b-namespaces
+
+commonAnnotations:
+  project-owner: team-b
+
+patches:
+  - target:
+      kind: Secret
+      name: global-secret
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          teama-applied_config: "true"

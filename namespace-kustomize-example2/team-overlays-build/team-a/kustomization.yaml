@@ -6,7 +6,7 @@ commonAnnotations:
   project-owner: team-a
 commonLabels:
   deployer: "kustomize-global"
-
+  
 patches:
   - target:
       kind: Secret

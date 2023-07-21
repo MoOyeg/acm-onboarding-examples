@@ -4,6 +4,8 @@ resources:
 
 commonAnnotations:
   project-owner: team-b
+commonLabels:
+  deployer: "kustomize-global"
 
 patches:
   - target:

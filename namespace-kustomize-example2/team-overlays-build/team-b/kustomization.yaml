@@ -1,12 +1,12 @@
 resources:
-  - ./team-a-clusterresources
-  - ./team-a-namespaces
+  - ./team-b-clusterresources
+  - ./team-b-namespaces
 
 commonAnnotations:
-  project-owner: team-a
+  project-owner: team-b
 commonLabels:
   deployer: "kustomize-global"
-
+  
 patches:
   - target:
       kind: Secret

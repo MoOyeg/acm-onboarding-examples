@@ -24,7 +24,7 @@ oc apply -k ./acm-onboarding-examples/namespace-kustomize-example1/team-overlays
 oc apply -k ./acm-onboarding-examples/namespace-kustomize-example1/team-overlays-build/team-b/
 ```
 
-One problem that might still exist though is how to handle the creation of the above manifests in a scalable fashion e.g Team A might need these manifests applied on 2 clusters they manage while team b might need these manifests applied to ephemeral clusters they spin up and spin down weekly.This is a problem Red Hat's Advanced Cluster Management can help solve.
+One problem that might still exist though is how to handle the creation of the above manifests in a scalable fashion e.g Team A might need these manifests applied on 2 clusters they manage while team b might need these manifests applied to ephemeral clusters they spin up and spin down weekly.This is a problem Red Hat's Advanced Cluster Management can help solve.Using ACM we can control which clusters get our team manifests applied.
 
   - Red Hat Advanced Cluster Management provides(RHACM) a [Policy Generator](https://github.com/stolostron/policy-generator-plugin/tree/main). The Policy Generator allows us to generate RHACM policies by passing existing yaml manifests directly to kustomize. This makes it much easier to move existing policies to RHACM. Review the [policygenerator example file](./namespace-kustomize-example1/team-overlays-build/policygenerator.yaml) to understand more.
   
@@ -64,9 +64,33 @@ One problem that might still exist though is how to handle the creation of the a
             ```
             oc get namespaces -l deployer=kustomize-global
             ```
-    - Using ACM we can control which clusters get our team manifests applied. 
 
-    
+
+### ACM Usage Example 2 
+
+There are still a few things in [ACM Usage Example 1](#acm-usage-example-1) above that might be difficult to do in a real environment. An example of this would include we want a 'global-secret-for-every-namespace' to be created in every namespace we create, and we used a [Kustomize SecretGenerator](./namespace-kustomize-example1/global-teams/namespaced-resources/kustomization.yaml) to achieve this.Due to the nature of secrets we might prefer that our secrets be created via a seperate process and be available to any namespace we create. We can do this via ACM functions and labels.[ACM provides a series of Template Functions that allow us to do processing on templates we generate](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html/governance/governance#template-functions).
+
+   - We have created a [policy](./namespace-kustomize-example2/configurations/global-secret-example-resources/policy-global-secret.yaml) to help us manage the creation of our secrets.Let's review the policy
+     
+       - 'object-templates-raw:' means we will be creating an advanced template that can support range and if else functions.
+
+       - '{{- range (lookup "v1" "Namespace" "" "" "deployer=kustomize-global").items }}' means we are going to loop through (range) all objects of type namespace that are labeled with deployer=kustomize-global and apply the template below that line for every object in that loop.
+
+       - 'username: {{hub fromSecret "global-policies" "global-secret-for-every-namespace" "username" hub}}' means we are going to lookup the value of key username from an existing secret called 'global-secret-for-every-namespace' in the 'global-policies' namespace. We also do the same for value secret.
+
+       - 'namespace: '{{ .metadata.name }}' means we are going to take the name of the object we looped through, and since we are looping through namespaces that would be the namespace name.
+
+       - The final effect of this policy is we would be creating a secret in every namespace labeled with deployer=kustomize-global. And in this example this policy would be applied on every cluster in ACM [we set it for our global clusterset](./namespace-kustomize-example2/configurations/global-secret-example-resources/placement-global-secret.yaml)
+
+       - We can apply this policy
+            ```
+            oc apply -k ./acm-onboarding-examples/namespace-kustomize-example2/configurations/global-secret-example-resources
+            ```
+
+
+
+
+
 
 
 

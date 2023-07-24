@@ -1,0 +1,5 @@
+resources:
+- ./namespace-dev
+- ./namespace-pre-prod
+- ./namespace-prod
+nameSuffix: "-team-b"

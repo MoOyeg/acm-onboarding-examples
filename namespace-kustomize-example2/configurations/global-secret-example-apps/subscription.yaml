@@ -2,16 +2,21 @@ apiVersion: apps.open-cluster-management.io/v1
 kind: Subscription
 metadata:
   annotations:
+    apps.open-cluster-management.io/cluster-admin: 'true'
     apps.open-cluster-management.io/git-branch: working
-    apps.open-cluster-management.io/git-path: namespace-kustomize-example2/configurations/global-secret-example-resources
+    apps.open-cluster-management.io/git-path: >-
+      namespace-kustomize-example2/configurations/global-secret-example-resources
     apps.open-cluster-management.io/reconcile-option: merge
-    apps.open-cluster-management.io/reconcile-rate: "off"
+  name: global-secret-example-subscription-1
+  namespace: global-policies
   labels:
     app: global-secret-example
-  name: sub-channel-global-secret-example
-  namespace: global-policies
+    app.kubernetes.io/part-of: global-secret-example
+    apps.open-cluster-management.io/reconcile-rate: 'off'
 spec:
-  channel: channel-global-secret-example/channel-global-secret-example
+  channel: >-
+    ggithubcom-mooyeg-acm-onboarding-examples-ns/ggithubcom-mooyeg-acm-onboarding-examples
   placement:
-    clusterSelector: {}
-    
+    placementRef:
+      kind: Placement
+      name: global-secret-example-placement-1

@@ -1,0 +1,4 @@
+resources:
+  - placement-global-secret.yaml
+  - placementbinding-global-secret.yaml
+  - policy-global-secret.yaml

@@ -1,4 +1,5 @@
-apiVersion: v1
 kind: Namespace
+apiVersion: v1
 metadata:
-  name: channel-global-secret-example
+  name: ggithubcom-mooyeg-acm-onboarding-examples-ns
+spec: {}

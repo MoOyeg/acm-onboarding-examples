@@ -3,6 +3,7 @@
 This repo focuses on showing examples of how to use [Red Hat Advanced Cluster management](https://www.redhat.com/en/technologies/management/advanced-cluster-management) for onboarding users and application unto OpenShift Platform/Kubernetes Platform.
 
 ### Requirements
+- Red Hat Advanced Cluster Management must be installed.
 - The user running the below commands must have cluster-admin privilege.
 - The user running this commands must have subscription-admin privileges.
     ```
@@ -12,6 +13,9 @@ This repo focuses on showing examples of how to use [Red Hat Advanced Cluster ma
     ```
     oc apply -k ./acm-onboarding-examples/requirements/
     ```
+
+### Notes
+- Some of the RHACM policy examples used below are quite intensive.If they are to be used in a realistic setting their [evaluation intervals should be set to a reasonable value](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html/governance/governance#configuration-policy-yaml-table)
 
 ### ACM Usage Example 1  
 (./namespace-kustomize-example1/) shows an example of how a hierarchical configuration of namespaces might work. [Team A](./namespace-kustomize-example1/team-overlays-build/team-a/) and [Team B](./namespace-kustomize-example1/team-overlays-build/team-b/) inherit a Secret, ClusterResourceQuota and LimitRange from the [global-team configuration](./namespace-kustomize-example1/global-teams) customized for each team via the use of [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/).
@@ -87,9 +91,22 @@ There are still a few things in [ACM Usage Example 1](#acm-usage-example-1) abov
             oc apply -k ./acm-onboarding-examples/namespace-kustomize-example2/configurations/global-secret-example-resources
             ```
 
+### ACM Usage Example 3
+
+This example requires that you have:
+- [A storageclass that is annotated as the default storage class](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/).If you don't customize templates to the your specific storage class.
 
 
 
+Create our example users,teams and install the devspaces operator
+```
+oc apply -k ./acm-onboarding-examples/namespace-kustomize-example3/requirements/ -n global-policies
+```
+
+kustomize build --enable-alpha-plugins ./acm-onboarding-examples/namespace-kustomize-example3/team-overlays-build/ | oc create -f -
+
+
+kustomize build --enable-alpha-plugins ./acm-onboarding-examples/namespace-kustomize-example3/team-specific-policies/team-a-policies| oc create -f -
 
 
 

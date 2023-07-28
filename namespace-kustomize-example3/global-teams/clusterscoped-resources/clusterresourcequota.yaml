@@ -1,0 +1,13 @@
+apiVersion: quota.openshift.io/v1
+kind: ClusterResourceQuota
+metadata:
+  name: for-append-team-name
+spec:
+  quota: 
+    hard:
+      pods: "20"
+      secrets: "100"
+  selector:
+    annotations: 
+      project-owner: append-team-name
+    labels: null 

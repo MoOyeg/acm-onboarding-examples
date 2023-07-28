@@ -6,4 +6,9 @@ metadata:
 spec:
   predicates:
     - requiredClusterSelector:
-        labelSelector: {}
+        labelSelector:
+          matchExpressions:
+            - key: team-a-cluster
+              operator: In
+              values:
+                - "true"

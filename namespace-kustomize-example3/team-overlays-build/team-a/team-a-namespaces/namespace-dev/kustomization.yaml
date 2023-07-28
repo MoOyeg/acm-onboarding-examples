@@ -1,0 +1,5 @@
+resources:
+  - "./resources/namespace.yaml"
+  - "../../../../global-teams/namespaced-resources"
+
+namespace: namespace-dev-team-a

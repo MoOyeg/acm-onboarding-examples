@@ -1,0 +1,4 @@
+resources:
+  - placement-team-a-devspaces.yaml
+  - placementbinding-team-a-devspaces.yaml
+  - policy-team-a-devspaces.yaml

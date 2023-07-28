@@ -3,6 +3,7 @@
 This repo focuses on showing examples of how to use [Red Hat Advanced Cluster management](https://www.redhat.com/en/technologies/management/advanced-cluster-management) for onboarding users and application unto OpenShift Platform/Kubernetes Platform.
 
 ### Requirements
+- Red Hat Advanced Cluster Management must be installed.
 - The user running the below commands must have cluster-admin privilege.
 - The user running this commands must have subscription-admin privileges.
     ```
@@ -12,6 +13,9 @@ This repo focuses on showing examples of how to use [Red Hat Advanced Cluster ma
     ```
     oc apply -k ./acm-onboarding-examples/requirements/
     ```
+
+### Notes
+- Some of the RHACM policy examples used below are quite intensive.If they are to be used in a realistic setting their [evaluation intervals should be set to a reasonable value](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html/governance/governance#configuration-policy-yaml-table)
 
 ### ACM Usage Example 1  
 (./namespace-kustomize-example1/) shows an example of how a hierarchical configuration of namespaces might work. [Team A](./namespace-kustomize-example1/team-overlays-build/team-a/) and [Team B](./namespace-kustomize-example1/team-overlays-build/team-b/) inherit a Secret, ClusterResourceQuota and LimitRange from the [global-team configuration](./namespace-kustomize-example1/global-teams) customized for each team via the use of [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/).
@@ -87,7 +91,39 @@ There are still a few things in [ACM Usage Example 1](#acm-usage-example-1) abov
             oc apply -k ./acm-onboarding-examples/namespace-kustomize-example2/configurations/global-secret-example-resources
             ```
 
+### ACM Usage Example 3
+We can also use ACM to improve our application delivery.A common use case might be to create a Kubernetes object for every user in a group. Since we do not want to hardcode the users, we can use ACM to look up user group membership and then create the necessary kubernetes object. The example below creates a policy that will create a devworkspace via [OpenShift DevSpaces](https://access.redhat.com/products/red-hat-openshift-dev-spaces/).
 
+This example requires that you have:
+- [A storageclass that is annotated as the default storage class](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/).If you don't customize templates to the your specific storage class.
+- Run the requirements for this scenario. This will create an htpasswd provider. It will create multiple htpasswd users demo-test-user[1-6] all with password "test".
+    ```
+    oc apply -k ./acm-onboarding-examples/namespace-kustomize-example3/requirements/ -n global-policies
+    ```
+
+- Apply the kustomize team files similar to the previous examples
+    ```
+    kustomize build --enable-alpha-plugins ./acm-onboarding-examples/namespace-kustomize-example3/team-overlays-build/ | oc create -f -
+    ```
+
+- Let's tag our local-cluster to get manifests team-a manifests applied
+    ```
+    oc label managedcluster local-cluster team-a-cluster=true
+    ```
+
+- Finally apply our custom devspaces Policy
+    ```
+    kustomize build --enable-alpha-plugins ./acm-onboarding-examples/namespace-kustomize-example3/team-specific-policies/team-a-policies| oc create -f -
+    ```
+
+    - How does the Policy work?
+      Review [Policy File](namespace-kustomize-example3/team-specific-policies/team-a-policies/team-a-devspaces/policy-team-a-devspaces.yaml).
+
+       Loop though ll the users in the platform and then check if the user is in team-a.
+
+       ```
+       {{- range (lookup "user.openshift.io/v1" "User" "" "" "").items }}          
+       {{- if contains .metadata.name ((lookup "user.openshift.io/v1" "Group" "" "team-a" "").users | join "_") }}
 
 
 

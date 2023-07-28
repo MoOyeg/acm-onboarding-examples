@@ -15,6 +15,17 @@ policyDefaults:
   # orderManifests: true
   # consolidateManifests: false
 policies:
+- name: policy-che-cluster
+  disabled: false
+  manifests:
+    - path: ./checluster
+  placement:
+    labelSelector: {}
+  extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: Policy
+      name: openshift-devspaces-installed
 - name: policy-team-a-resources
   disabled: false
   manifests:

@@ -1,0 +1,8 @@
+kind: Group
+apiVersion: user.openshift.io/v1
+metadata:
+  name: team-a
+users:
+  - demo-test-user1
+  - demo-test-user2
+  - demo-test-user3

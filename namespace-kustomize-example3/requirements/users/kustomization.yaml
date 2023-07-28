@@ -1,0 +1,8 @@
+resources:
+  - oauth-htpasswd.yaml
+  - user1.yaml
+  - user2.yaml
+  - user3.yaml
+  - user4.yaml
+  - user5.yaml  
+  - user6.yaml

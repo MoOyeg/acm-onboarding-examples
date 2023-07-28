@@ -1,0 +1,3 @@
+resources:
+  - ./team-a.yaml
+  - ./team-b.yaml

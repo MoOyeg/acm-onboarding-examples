@@ -13,65 +13,13 @@ policyDefaults:
   namespace: global-policies
   generatePlacementWhenInSet: true
 policies:
-# - name: policy-team-a-resources
-#   disabled: false
-#   manifests:
-#     - path: ./team-a
-#   # policySets:
-#   #   - policy-team-resources
-#   placement:
-#     # clusterSelectors:
-#     #   matchLabels:
-#     #     team-a-cluster: "true"
-#     labelSelector:
-#       matchExpressions:
-#         - key: team-a-cluster
-#           operator: In
-#           values:
-#             - "true"
-# - name: policy-team-b-resources
-#   disabled: false
-#   manifests:
-#     - path: ./team-b
-#   placement:
-#     # clusterSelectors:
-#     #   matchLabels:
-#     #     team-b-cluster: "true"
-#     labelSelector:
-#       matchExpressions:
-#         - key: team-b-cluster
-#           operator: In
-#           values:
-#             - "true"
 - name: policy-configurations
   disabled: false
   manifests:
     - path: ./configurations
   placement:
-    # clusterSelectors:
-    #   matchLabels:
-    #     team-b-cluster: "true"
     labelSelector: {}
-      # matchExpressions:
-      #   - key: vendor
-      #     operator: In
-      #     values:
-      #       - ""
-#   policySets:
-#     - policy-team-resources
-# policySets:
-#   - name: policy-team-resources
-#     description: "Policy Set for Team Resources"
-#     placement: {}
-      # clusterSelectors:
-      #   matchLabels:
-      #     team-app-cluster: "true"
-      # labelSelector:
-      #   matchExpressions:
-      #     - key: team-app-cluster
-      #       operator: In
-      #       values:
-      #         - "true"
+
 
 
 

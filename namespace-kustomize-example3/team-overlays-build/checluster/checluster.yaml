@@ -1,0 +1,28 @@
+apiVersion: org.eclipse.che/v2
+kind: CheCluster
+metadata:
+  name: devspaces-global
+  namespace: devspaces
+spec:
+  components:
+    cheServer:
+      debug: false
+      logLevel: INFO
+    metrics:
+      enable: true
+    devWorkspace:
+      runningLimit: '2'
+  containerRegistry: {}
+  devEnvironments:
+    startTimeoutSeconds: 300
+    secondsOfRunBeforeIdling: -1
+    maxNumberOfWorkspacesPerUser: -1
+    containerBuildConfiguration:
+      openShiftSecurityContextConstraint: container-build
+    defaultNamespace:
+      autoProvision: false #
+    secondsOfInactivityBeforeIdling: 1800
+    storage:
+      pvcStrategy: per-user 
+  gitServices: {}
+  networking: {}

@@ -20,7 +20,7 @@ spec:
     containerBuildConfiguration:
       openShiftSecurityContextConstraint: container-build
     defaultNamespace:
-      autoProvision: false #
+      autoProvision: false #Since we will provision namespaces ourselves
     secondsOfInactivityBeforeIdling: 1800
     storage:
       pvcStrategy: per-user 

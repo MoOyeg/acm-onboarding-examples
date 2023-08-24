@@ -15,11 +15,11 @@ spec:
     kind: Policy
     name: policy-team-a-resources #Make sure team-a resources are created
     namespace: global-policies
-  - apiVersion: policy.open-cluster-management.io/v1
-    compliance: Compliant
-    kind: Policy
-    name: policy-che-cluster #Make sure decspaces is installed and configured
-    namespace: global-policies
+  # - apiVersion: policy.open-cluster-management.io/v1
+  #   compliance: Compliant
+  #   kind: Policy
+  #   name: policy-che-cluster #Make sure decspaces is installed and configured
+  #   namespace: global-policies
   disabled: false
   policy-templates:
   - objectDefinition:
@@ -36,7 +36,7 @@ spec:
               kind: Namespace
               apiVersion: v1
               metadata:
-                name: {{ .metadata.name }}-team-a-devspace
+                name: {{ .metadata.name }}-devspaces
                 labels:
                   app.kubernetes.io/part-of: che.eclipse.org
                   app.kubernetes.io/component: workspaces-namespace
@@ -66,27 +66,90 @@ spec:
           {{- range (lookup "v1" "Namespace" "" "" "team-a-devspace=true").items }}
           - complianceType: musthave
             objectDefinition:
-              kind: DevWorkspace
               apiVersion: workspace.devfile.io/v1alpha2
+              kind: DevWorkspace
               metadata:
-                name: my-devworkspace
+                annotations:
+                  che.eclipse.org/devfile-source: |
+                    factory:
+                      params: >-
+                        devWorkspace=https://devfile-registry.openshift-devspaces.svc.cluster.local/devfile-registry/devfiles/nodejs__nodejs-mongodb-sample/devworkspace-che-code-latest.yaml&storageType=per-user&url=https://github.com/devspaces-samples/nodejs-mongodb-sample/tree/devspaces-3.7-rhel-8
+                name: nodejs-mongodb
                 namespace: {{ .metadata.name }}
               spec:
                 routingClass: che
-                started: true
-                contributions: 
-                  - name: ide
-                    uri: http://che-gateway.devspaces.svc.cluster.local:8080/plugin-registry/v3/plugins/che-incubator/che-code/latest/devfile.yaml
+                started: false
                 template:
-                  projects:
-                    - name: eclipse-che
-                      git:
-                        remotes:
-                          origin: https://github.com/eclipse-che/che-docs
+                  attributes:
+                    controller.devfile.io/devworkspace-config:
+                      name: devworkspace-config
+                      namespace: openshift-devspaces
+                    controller.devfile.io/scc: container-build
+                    controller.devfile.io/storage-type: per-user
+                  commands:
+                    - exec:
+                        commandLine: npm install && node --inspect=9229 app.js
+                        component: nodejs
+                        group:
+                          kind: run
+                        label: Run the application
+                        workingDir: '${PROJECTS_ROOT}/nodejs-mongodb-sample'
+                      id: 1-run
                   components:
-                    - name: tooling-container
+                    - attributes:
+                        controller.devfile.io/merge-contribution: true
                       container:
-                        image: quay.io/devfile/universal-developer-image:ubi8-latest
+                        cpuRequest: '2'
+                        sourceMapping: /projects
+                        cpuLimit: '2'
+                        volumeMounts:
+                          - name: npm
+                            path: /home/user/.npm
+                        memoryLimit: 2G
+                        image: >-
+                          registry.redhat.io/devspaces/udi-rhel8@sha256:a55b40dae8ea6f85bb399bebcadf9df8b7ee47896d2be920de2bcec3fefac1f0
+                        endpoints:
+                          - exposure: public
+                            name: nodejs
+                            protocol: http
+                            targetPort: 8080
+                        mountSources: true
+                      name: nodejs
+                    - name: npm
+                      volume:
+                        size: 1G
+                    - container:
+                        endpoints:
+                          - exposure: internal
+                            name: mongodb
+                            protocol: http
+                            targetPort: 27017
+                        env:
+                          - name: MONGODB_USER
+                            value: user
+                          - name: MONGODB_PASSWORD
+                            value: password
+                          - name: MONGODB_DATABASE
+                            value: guestbook
+                          - name: MONGODB_ADMIN_PASSWORD
+                            value: password
+                        image: >-
+                          registry.redhat.io/rhscl/mongodb-36-rhel7@sha256:9f799d356d7d2e442bde9d401b720600fd9059a3d8eefea6f3b2ffa721c0dc73
+                        memoryLimit: 512Mi
+                        mountSources: false
+                        sourceMapping: /projects
+                        volumeMounts:
+                          - name: mongo-storage
+                            path: /var/lib/mongodb/data
+                      name: mongo
+                    - name: mongo-storage
+                      volume:
+                        size: 1G
+                  projects:
+                    - name: nodejs-mongodb-sample
+                      zip:
+                        location: >-
+                          http://devfile-registry.openshift-devspaces.svc:8080/resources/v2/nodejs-mongodb-sample.zip
           {{- end }}
         pruneObjectBehavior: DeleteIfCreated
         remediationAction: enforce

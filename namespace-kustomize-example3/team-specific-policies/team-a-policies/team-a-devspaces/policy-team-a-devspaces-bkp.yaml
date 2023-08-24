@@ -1,0 +1,96 @@
+# Since this policy uses a user name and searches if a string contains a substring versus an exact match having short usernames will create a problem.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-team-a-devspaces
+  namespace: global-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+spec:
+  dependencies:
+  - apiVersion: policy.open-cluster-management.io/v1
+    compliance: Compliant
+    kind: Policy
+    name: policy-team-a-resources #Make sure team-a resources are created
+    namespace: global-policies
+  - apiVersion: policy.open-cluster-management.io/v1
+    compliance: Compliant
+    kind: Policy
+    name: policy-che-cluster #Make sure devspaces is installed and configured
+    namespace: global-policies
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-team-a-devspaces-ns #Create a developer namespace for all users in team-a
+      spec:  
+        object-templates-raw: | 
+          {{- range (lookup "user.openshift.io/v1" "User" "" "" "").items }}          
+          {{- if contains .metadata.name ((lookup "user.openshift.io/v1" "Group" "" "team-a" "").users | join "_") }}
+          - complianceType: musthave
+            objectDefinition:
+              kind: Namespace
+              apiVersion: v1
+              metadata:
+                name: {{ .metadata.name }}-team-a-devspace
+                labels:
+                  app.kubernetes.io/part-of: che.eclipse.org
+                  app.kubernetes.io/component: workspaces-namespace
+                  deployer: "kustomize-global"
+                  team-a-devspace: "true"
+                  devspace-owner: {{ .metadata.name }}
+                annotations:
+                  che.eclipse.org/username: {{ .metadata.name }}
+                  project-owner: team-a
+          {{- end }}
+          {{- end }}
+        pruneObjectBehavior: DeleteIfCreated
+        remediationAction: enforce
+        severity: medium
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-team-a-devspaces-ns
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-team-a-devworkspace #Create a devworkspace for each user in team-a
+      spec:  
+        object-templates-raw: |
+          {{- range (lookup "v1" "Namespace" "" "" "team-a-devspace=true").items }}
+          - complianceType: musthave
+            objectDefinition:
+              kind: DevWorkspace
+              apiVersion: workspace.devfile.io/v1alpha2
+              metadata:
+                name: my-devworkspace
+                namespace: {{ .metadata.name }}
+              spec:
+                routingClass: che
+                started: true
+                contributions: 
+                  - name: ide
+                    uri: http://che-gateway.devspaces.svc.cluster.local:8080/plugin-registry/v3/plugins/che-incubator/che-code/latest/devfile.yaml
+                template:
+                  projects:
+                    - name: eclipse-che
+                      git:
+                        remotes:
+                          origin: https://github.com/eclipse-che/che-docs
+                  components:
+                    - name: tooling-container
+                      container:
+                        image: quay.io/devfile/universal-developer-image:ubi8-latest
+          {{- end }}
+        pruneObjectBehavior: DeleteIfCreated
+        remediationAction: enforce
+        severity: medium
+
+
+

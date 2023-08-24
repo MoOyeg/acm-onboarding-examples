@@ -96,7 +96,7 @@ We can also use ACM to improve our application delivery.A common use case might 
 
 This example requires that you have:
 - [A storageclass that is annotated as the default storage class](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/).If you don't customize templates to the your specific storage class.
-- Run the requirements for this scenario. This will create an htpasswd provider. It will create multiple htpasswd users demo-test-user[1-6] all with password "test".
+- Run the requirements for this scenario. This will create an htpasswd provider. It will create multiple htpasswd users demo-test-user[1-6] all with password "test".Please allow OCP to complete the oauth update.
     ```
     oc apply -k ./acm-onboarding-examples/namespace-kustomize-example3/requirements/ -n global-policies
     ```
